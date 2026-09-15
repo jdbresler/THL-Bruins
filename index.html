@@ -1,0 +1,1009 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Bruins Season Ticket Draft</title>
+<style>
+  :root{
+    --ink:#0a0b0d;
+    --panel:#15171a;
+    --panel-2:#1c1f23;
+    --line: rgba(255,255,255,0.09);
+    --line-strong: rgba(255,255,255,0.16);
+    --gold:#ffb81c;
+    --gold-dim: rgba(255,184,28,0.16);
+    --ice:#f2f4f6;
+    --ice-dim:#a6adb5;
+    --muted:#6b7280;
+    --red:#e4572e;
+    --green:#3fbf7f;
+    --blue:#6fd3f7;
+    --josh:#ffb81c;
+    --seth:#6fd3f7;
+    --soren:#e4572e;
+    --jim:#3fbf7f;
+  }
+  *{box-sizing:border-box;}
+  html,body{margin:0;padding:0;}
+  body{
+    background:var(--ink);
+    color:var(--ice);
+    font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,Helvetica,Arial,sans-serif;
+    min-height:100vh;
+    position:relative;
+    overflow-x:hidden;
+  }
+  body::before{
+    content:"";
+    position:fixed;
+    inset:0;
+    background:
+      radial-gradient(ellipse at 50% -10%, rgba(255,184,28,0.07), transparent 55%),
+      radial-gradient(ellipse at 50% 110%, rgba(111,211,247,0.05), transparent 55%);
+    pointer-events:none;
+    z-index:0;
+  }
+  .rink-lines{
+    position:fixed;
+    inset:0;
+    pointer-events:none;
+    opacity:0.05;
+    z-index:0;
+  }
+  #app{
+    position:relative;
+    z-index:1;
+    max-width:760px;
+    margin:0 auto;
+    padding:28px 20px 80px;
+  }
+  .wide{max-width:920px;}
+
+  /* ---- Header ---- */
+  .brand{
+    display:flex;
+    align-items:center;
+    gap:14px;
+    margin-bottom:6px;
+  }
+  .brand svg{flex-shrink:0;}
+  .brand h1{
+    font-size:22px;
+    font-weight:800;
+    letter-spacing:-0.01em;
+    margin:0;
+    line-height:1.1;
+  }
+  .brand .sub{
+    color:var(--ice-dim);
+    font-size:13.5px;
+    margin-top:3px;
+    font-weight:500;
+  }
+  .topbar{
+    display:flex;
+    justify-content:space-between;
+    align-items:flex-start;
+    margin-bottom:34px;
+    gap:16px;
+  }
+  .home-link{
+    background:none;
+    border:1px solid var(--line);
+    color:var(--ice-dim);
+    font-size:12.5px;
+    padding:7px 12px;
+    border-radius:7px;
+    cursor:pointer;
+    white-space:nowrap;
+  }
+  .home-link:hover{border-color:var(--line-strong); color:var(--ice);}
+
+  /* ---- Cards / panels ---- */
+  .panel{
+    background:var(--panel);
+    border:1px solid var(--line);
+    border-radius:14px;
+    padding:22px;
+  }
+  .panel + .panel{margin-top:16px;}
+
+  h2.section-title{
+    font-size:15px;
+    font-weight:700;
+    margin:0 0 14px 0;
+    color:var(--ice);
+  }
+  p.hint{
+    color:var(--ice-dim);
+    font-size:13.5px;
+    line-height:1.5;
+    margin:0 0 18px 0;
+  }
+
+  /* ---- Player picker ---- */
+  .player-grid{
+    display:grid;
+    grid-template-columns:1fr 1fr;
+    gap:12px;
+    margin:20px 0 8px;
+  }
+  .player-btn{
+    background:var(--panel-2);
+    border:1px solid var(--line);
+    border-radius:12px;
+    padding:20px 14px;
+    text-align:left;
+    cursor:pointer;
+    color:var(--ice);
+    transition:border-color .15s, background .15s;
+    position:relative;
+  }
+  .player-btn:hover{border-color:var(--line-strong); background:#212428;}
+  .player-btn .name{font-size:17px;font-weight:700;}
+  .player-btn .status{
+    font-size:12px;
+    margin-top:6px;
+    color:var(--ice-dim);
+  }
+  .player-btn .dot{
+    display:inline-block;
+    width:7px;height:7px;
+    border-radius:50%;
+    margin-right:6px;
+    vertical-align:middle;
+  }
+  .player-btn.submitted{border-color:var(--line-strong);}
+
+  .admin-row{
+    margin-top:22px;
+    padding-top:18px;
+    border-top:1px solid var(--line);
+    text-align:center;
+  }
+  .text-link{
+    color:var(--ice-dim);
+    font-size:12.5px;
+    background:none;
+    border:none;
+    cursor:pointer;
+    text-decoration:underline;
+    text-decoration-color:var(--line-strong);
+  }
+  .text-link:hover{color:var(--ice);}
+
+  .results-cta{
+    margin-top:18px;
+    display:flex;
+    justify-content:center;
+  }
+
+  /* ---- Buttons ---- */
+  .btn{
+    background:var(--gold);
+    color:#241a04;
+    border:none;
+    font-weight:700;
+    font-size:14.5px;
+    padding:12px 20px;
+    border-radius:9px;
+    cursor:pointer;
+    transition:filter .15s, transform .05s;
+  }
+  .btn:hover{filter:brightness(1.08);}
+  .btn:active{transform:scale(0.99);}
+  .btn:disabled{
+    background:var(--panel-2);
+    color:var(--muted);
+    cursor:not-allowed;
+    border:1px solid var(--line);
+  }
+  .btn.secondary{
+    background:var(--panel-2);
+    color:var(--ice);
+    border:1px solid var(--line-strong);
+  }
+  .btn.secondary:hover{border-color:var(--gold); }
+  .btn.danger{
+    background:transparent;
+    color:var(--red);
+    border:1px solid rgba(228,87,46,0.4);
+  }
+  .btn.danger:hover{background:rgba(228,87,46,0.08);}
+  .btn.small{padding:8px 13px; font-size:13px;}
+
+  /* ---- Ranking list ---- */
+  .game-row{
+    display:grid;
+    grid-template-columns:44px 1fr auto 96px;
+    align-items:center;
+    gap:14px;
+    padding:12px 4px;
+    border-bottom:1px solid var(--line);
+  }
+  .game-row:last-child{border-bottom:none;}
+  .game-num{
+    font-size:19px;
+    font-weight:800;
+    color:var(--ice-dim);
+    -webkit-text-stroke:1px var(--line-strong);
+    text-align:center;
+  }
+  .game-info .opp{
+    font-size:14.5px;
+    font-weight:700;
+    color:var(--ice);
+  }
+  .game-info .meta{
+    font-size:12.5px;
+    color:var(--ice-dim);
+    margin-top:2px;
+  }
+  .theme-badge{
+    display:inline-block;
+    margin-top:5px;
+    font-size:11px;
+    font-weight:700;
+    color:var(--gold);
+    background:var(--gold-dim);
+    border:1px solid rgba(255,184,28,0.35);
+    border-radius:999px;
+    padding:2px 9px;
+  }
+  .game-cost{
+    font-size:13.5px;
+    font-weight:700;
+    color:var(--gold);
+    white-space:nowrap;
+  }
+  select.rank-select{
+    width:100%;
+    background:var(--panel-2);
+    color:var(--ice);
+    border:1px solid var(--line-strong);
+    border-radius:7px;
+    padding:8px 6px;
+    font-size:13.5px;
+    font-weight:600;
+    text-align:center;
+  }
+  select.rank-select.dupe{
+    border-color:var(--red);
+    background:rgba(228,87,46,0.12);
+    color:#ffb4a0;
+  }
+  select.rank-select:focus{outline:2px solid var(--gold); outline-offset:1px;}
+
+  .sticky-footer{
+    position:sticky;
+    bottom:14px;
+    margin-top:20px;
+    background:var(--panel-2);
+    border:1px solid var(--line-strong);
+    border-radius:12px;
+    padding:14px 18px;
+    display:flex;
+    justify-content:space-between;
+    align-items:center;
+    gap:16px;
+    box-shadow:0 10px 30px rgba(0,0,0,0.4);
+  }
+  .progress-text{
+    font-size:13px;
+    color:var(--ice-dim);
+  }
+  .progress-text b{color:var(--ice);}
+  .progress-text.error{color:var(--red);}
+
+  /* ---- Confirmation ---- */
+  .confirm-box{
+    text-align:center;
+    padding:36px 20px;
+  }
+  .confirm-box .big{
+    font-size:20px;
+    font-weight:800;
+    margin-bottom:8px;
+  }
+  .confirm-box p{color:var(--ice-dim); font-size:14px; line-height:1.5;}
+
+  /* ---- Admin ---- */
+  .status-grid{
+    display:grid;
+    grid-template-columns:repeat(4,1fr);
+    gap:10px;
+    margin-bottom:20px;
+  }
+  .status-chip{
+    background:var(--panel-2);
+    border:1px solid var(--line);
+    border-radius:10px;
+    padding:12px 8px;
+    text-align:center;
+  }
+  .status-chip .name{font-size:13px;font-weight:700;}
+  .status-chip .state{font-size:11.5px;margin-top:4px;}
+  .status-chip.yes{border-color:rgba(63,191,127,0.5);}
+  .status-chip.yes .state{color:var(--green);}
+  .status-chip.no .state{color:var(--muted);}
+
+  .order-grid{
+    display:grid;
+    grid-template-columns:repeat(4,1fr);
+    gap:10px;
+    margin-bottom:18px;
+  }
+  .order-slot label{
+    display:block;
+    font-size:11.5px;
+    color:var(--ice-dim);
+    margin-bottom:6px;
+    font-weight:600;
+  }
+  .order-slot select{
+    width:100%;
+    background:var(--panel-2);
+    color:var(--ice);
+    border:1px solid var(--line-strong);
+    border-radius:8px;
+    padding:9px 6px;
+    font-size:13.5px;
+    font-weight:600;
+  }
+
+  .action-row{
+    display:flex;
+    gap:10px;
+    flex-wrap:wrap;
+    margin-top:6px;
+  }
+
+  .table-scroll{
+    width:100%;
+    overflow-x:auto;
+  }
+  table.results-table{
+    width:100%;
+    border-collapse:collapse;
+    font-size:13.5px;
+    margin-top:8px;
+    min-width:520px;
+  }
+  table.results-table th{
+    text-align:left;
+    font-size:11.5px;
+    color:var(--ice-dim);
+    font-weight:700;
+    padding:8px 8px;
+    border-bottom:1px solid var(--line-strong);
+    text-transform:uppercase;
+    letter-spacing:0.03em;
+  }
+  table.results-table td{
+    padding:9px 8px;
+    border-bottom:1px solid var(--line);
+    vertical-align:middle;
+  }
+  table.results-table tr:last-child td{border-bottom:none;}
+  .pill{
+    display:inline-block;
+    padding:4px 10px;
+    border-radius:999px;
+    font-size:12px;
+    font-weight:700;
+    color:#0a0b0d;
+  }
+  .summary-grid{
+    display:grid;
+    grid-template-columns:repeat(4,1fr);
+    gap:10px;
+    margin:18px 0 0;
+  }
+  .summary-card{
+    background:var(--panel-2);
+    border:1px solid var(--line);
+    border-radius:10px;
+    padding:14px 10px;
+    text-align:center;
+  }
+  .summary-card .pname{font-size:13px;font-weight:700;margin-bottom:6px;}
+  .summary-card .games{font-size:20px;font-weight:800;}
+  .summary-card .games-label{font-size:10.5px;color:var(--ice-dim);}
+  .summary-card .cost{font-size:13px;color:var(--gold);font-weight:700;margin-top:6px;}
+
+  .center-note{
+    text-align:center;
+    color:var(--ice-dim);
+    font-size:13px;
+    padding:20px 0;
+  }
+
+  .loading{
+    text-align:center;
+    color:var(--ice-dim);
+    padding:60px 0;
+    font-size:14px;
+  }
+
+  @media (max-width:520px){
+    .game-row{grid-template-columns:32px 1fr 88px;}
+    .game-cost{display:none;}
+    .order-grid, .status-grid, .summary-grid{grid-template-columns:1fr 1fr;}
+    .player-grid{grid-template-columns:1fr;}
+  }
+</style>
+</head>
+<body>
+<svg class="rink-lines" viewBox="0 0 800 800" preserveAspectRatio="xMidYMid slice">
+  <line x1="400" y1="0" x2="400" y2="800" stroke="#e4572e" stroke-width="3"/>
+  <line x1="150" y1="0" x2="150" y2="800" stroke="#6fd3f7" stroke-width="3"/>
+  <line x1="650" y1="0" x2="650" y2="800" stroke="#6fd3f7" stroke-width="3"/>
+  <circle cx="400" cy="400" r="90" stroke="#6fd3f7" stroke-width="3" fill="none"/>
+</svg>
+<div id="app"></div>
+
+<script>
+/* ---------------- Data ---------------- */
+const GAMES = [
+  {num:1, date:"2026-09-29", day:"Tue", time:"8:00 PM", opp:"New York Rangers", cost:800, theme:"Opening Night"},
+  {num:2, date:"2026-10-05", day:"Mon", time:"7:30 PM", opp:"Ottawa Senators", cost:560, theme:null},
+  {num:3, date:"2026-10-08", day:"Thu", time:"7:00 PM", opp:"Utah Mammoth", cost:484, theme:null},
+  {num:4, date:"2026-10-10", day:"Sat", time:"1:00 PM", opp:"Philadelphia Flyers", cost:800, theme:"Mental Health Awareness Night"},
+  {num:5, date:"2026-10-22", day:"Thu", time:"7:00 PM", opp:"Nashville Predators", cost:484, theme:"Hockey Fights Cancer"},
+  {num:6, date:"2026-10-24", day:"Sat", time:"7:00 PM", opp:"San Jose Sharks", cost:800, theme:null},
+  {num:7, date:"2026-10-31", day:"Sat", time:"1:00 PM", opp:"Chicago Blackhawks", cost:800, theme:null},
+  {num:8, date:"2026-11-02", day:"Mon", time:"7:00 PM", opp:"Vegas Golden Knights", cost:560, theme:"Military Appreciation Night"},
+  {num:9, date:"2026-11-08", day:"Sun", time:"1:00 PM", opp:"Florida Panthers", cost:992, theme:null},
+  {num:10, date:"2026-11-12", day:"Thu", time:"7:00 PM", opp:"Montreal Canadiens", cost:992, theme:null},
+  {num:11, date:"2026-11-14", day:"Sat", time:"7:00 PM", opp:"Minnesota Wild", cost:992, theme:null},
+  {num:12, date:"2026-11-17", day:"Tue", time:"7:00 PM", opp:"Los Angeles Kings", cost:560, theme:null},
+  {num:13, date:"2026-11-21", day:"Sat", time:"7:00 PM", opp:"Washington Capitals", cost:800, theme:null},
+  {num:14, date:"2026-11-25", day:"Wed", time:"7:00 PM", opp:"Winnipeg Jets", cost:800, theme:null},
+  {num:15, date:"2026-11-27", day:"Fri", time:"1:00 PM", opp:"Toronto Maple Leafs", cost:1236, theme:null},
+  {num:16, date:"2026-11-29", day:"Sun", time:"5:00 PM", opp:"Vancouver Canucks", cost:560, theme:null},
+  {num:17, date:"2026-12-01", day:"Tue", time:"7:30 PM", opp:"Colorado Avalanche", cost:1236, theme:"Patrice Bergeron Number Retirement Ceremony"},
+  {num:18, date:"2026-12-05", day:"Sat", time:"1:00 PM", opp:"Detroit Red Wings", cost:992, theme:null},
+  {num:19, date:"2026-12-12", day:"Sat", time:"1:00 PM", opp:"New Jersey Devils", cost:800, theme:null},
+  {num:20, date:"2026-12-15", day:"Tue", time:"7:00 PM", opp:"Florida Panthers", cost:800, theme:null},
+  {num:21, date:"2026-12-17", day:"Thu", time:"7:00 PM", opp:"St. Louis Blues", cost:560, theme:null},
+  {num:22, date:"2026-12-20", day:"Sun", time:"1:00 PM", opp:"Philadelphia Flyers", cost:992, theme:null},
+  {num:23, date:"2026-12-26", day:"Sat", time:"7:00 PM", opp:"New York Islanders", cost:1236, theme:null},
+  {num:24, date:"2026-12-30", day:"Wed", time:"7:30 PM", opp:"Edmonton Oilers", cost:800, theme:null},
+];
+const TOTAL_GAMES = GAMES.length;
+const PLAYERS = ["Josh","Seth","Soren","Jim"];
+const PLAYER_COLORS = {Josh:"#ffb81c", Seth:"#6fd3f7", Soren:"#e4572e", Jim:"#3fbf7f"};
+
+function fmtDate(iso){
+  const [y,m,d] = iso.split("-").map(Number);
+  const months = ["Jan","Feb","Mar","Apr","May","Jun","Jul","Aug","Sep","Oct","Nov","Dec"];
+  return months[m-1] + " " + d;
+}
+function fmtMoney(n){ return "$" + n.toLocaleString("en-US"); }
+
+const app = document.getElementById("app");
+
+/* ---------------- Backend config ---------------- */
+// 1. Create a free Firebase project at https://console.firebase.google.com
+// 2. Build > Realtime Database > Create Database
+// 3. Rules tab > set {"rules": {".read": true, ".write": true}} > Publish
+// 4. Copy the database URL shown at the top of the Data tab and paste it below.
+const FIREBASE_DB_URL_RAW = "REPLACE_WITH_YOUR_FIREBASE_DATABASE_URL";
+const FIREBASE_DB_URL = FIREBASE_DB_URL_RAW.replace(/\/+$/, "");
+const BACKEND_CONFIGURED = !FIREBASE_DB_URL.includes("REPLACE_WITH");
+
+function setupBanner(){
+  if(BACKEND_CONFIGURED) return "";
+  return `
+    <div class="panel" style="border-color:var(--red); margin-bottom:16px;">
+      <h2 class="section-title" style="color:var(--red);">Backend not configured yet</h2>
+      <p class="hint" style="margin-bottom:0;">This copy of the site can't save anything until a Firebase database URL is filled in at the top of the script (search for <code>FIREBASE_DB_URL</code>). Rankings and draft results will not persist until that's done.</p>
+    </div>`;
+}
+
+/* ---------------- Storage helpers (Firebase Realtime Database REST API) ---------------- */
+async function fbGet(path){
+  if(!BACKEND_CONFIGURED) return {ok:false, value:null, error:"Backend not configured"};
+  try{
+    const res = await fetch(FIREBASE_DB_URL + path + ".json");
+    if(!res.ok) return {ok:false, value:null, error:"HTTP " + res.status};
+    const data = await res.json();
+    return {ok:true, value:data, error:null};
+  }catch(e){
+    return {ok:false, value:null, error:e.message || "network error"};
+  }
+}
+async function fbSet(path, value){
+  if(!BACKEND_CONFIGURED) return {ok:false, error:"Backend not configured"};
+  try{
+    const res = await fetch(FIREBASE_DB_URL + path + ".json", {
+      method:"PUT",
+      headers:{"Content-Type":"application/json"},
+      body: JSON.stringify(value)
+    });
+    if(!res.ok) return {ok:false, error:"HTTP " + res.status};
+    return {ok:true, error:null};
+  }catch(e){
+    return {ok:false, error:e.message || "network error"};
+  }
+}
+async function fbDelete(path){
+  if(!BACKEND_CONFIGURED) return {ok:false};
+  try{
+    const res = await fetch(FIREBASE_DB_URL + path + ".json", {method:"DELETE"});
+    return {ok:res.ok};
+  }catch(e){
+    return {ok:false};
+  }
+}
+
+async function getRanking(name){
+  const r = await fbGet("/rankings/" + name);
+  return r.ok ? r.value : null;
+}
+async function setRanking(name, data){
+  const r = await fbSet("/rankings/" + name, data);
+  return r;
+}
+async function getDraftResult(){
+  const r = await fbGet("/draft/result");
+  return r.ok ? r.value : null;
+}
+async function setDraftResult(data){
+  const r = await fbSet("/draft/result", data);
+  return r.ok;
+}
+async function deleteDraftResult(){
+  await fbDelete("/draft/result");
+}
+async function deleteAllRankings(){
+  for(const p of PLAYERS){
+    await fbDelete("/rankings/" + p);
+  }
+}
+async function getAllStatuses(){
+  const out = {};
+  for(const p of PLAYERS){
+    out[p] = await getRanking(p);
+  }
+  return out;
+}
+
+
+/* ---------------- Header ---------------- */
+function header(subtitle, showHome){
+  return `
+  <div class="topbar">
+    <div class="brand">
+      <svg width="40" height="40" viewBox="0 0 40 40">
+        <circle cx="20" cy="20" r="18" fill="none" stroke="#ffb81c" stroke-width="2"/>
+        <circle cx="20" cy="20" r="3" fill="#ffb81c"/>
+        <line x1="20" y1="20" x2="20" y2="4" stroke="#ffb81c" stroke-width="1.5"/>
+        <line x1="20" y1="20" x2="33" y2="12" stroke="#ffb81c" stroke-width="1.5"/>
+        <line x1="20" y1="20" x2="33" y2="28" stroke="#ffb81c" stroke-width="1.5"/>
+        <line x1="20" y1="20" x2="20" y2="36" stroke="#ffb81c" stroke-width="1.5"/>
+        <line x1="20" y1="20" x2="7" y2="28" stroke="#ffb81c" stroke-width="1.5"/>
+        <line x1="20" y1="20" x2="7" y2="12" stroke="#ffb81c" stroke-width="1.5"/>
+      </svg>
+      <div>
+        <h1>Bruins Season Ticket Draft</h1>
+        <div class="sub">${subtitle}</div>
+      </div>
+    </div>
+    ${showHome ? `<button class="home-link" onclick="renderHome()">← Home</button>` : ""}
+  </div>`;
+}
+
+/* ---------------- Home ---------------- */
+async function renderHome(){
+  app.innerHTML = `<div class="loading">Loading…</div>`;
+  const statuses = await getAllStatuses();
+  const draftResult = await getDraftResult();
+
+  const playerButtons = PLAYERS.map(p => {
+    const submitted = !!statuses[p];
+    return `
+      <button class="player-btn ${submitted?'submitted':''}" onclick="renderPlayer('${p}')">
+        <div class="name">${p}</div>
+        <div class="status">
+          <span class="dot" style="background:${submitted ? PLAYER_COLORS[p] : 'var(--muted)'}"></span>
+          ${submitted ? "Rankings submitted" : "Hasn't ranked yet"}
+        </div>
+      </button>`;
+  }).join("");
+
+  app.innerHTML = `
+    ${header("First " + TOTAL_GAMES + " home games · 4 seats · everyone ranks, then we draft")}
+    ${setupBanner()}
+    <div class="panel">
+      <h2 class="section-title">Who are you?</h2>
+      <p class="hint">Pick your name to rank the first ${TOTAL_GAMES} games from 1 (most want) to ${TOTAL_GAMES} (least want). No one else can see your list.</p>
+      <div class="player-grid">${playerButtons}</div>
+      <div class="admin-row">
+        <button class="text-link" onclick="renderAdmin()">I'm the admin</button>
+      </div>
+    </div>
+    ${draftResult ? `<div class="results-cta"><button class="btn secondary" onclick="renderResults()">View draft results</button></div>` : ""}
+  `;
+}
+
+/* ---------------- Player ranking screen ---------------- */
+let currentRanks = {}; // gameNum -> rank value (string) for the active session
+
+async function renderPlayer(name){
+  app.innerHTML = `<div class="loading">Loading ${name}'s picks…</div>`;
+  const draftResult = await getDraftResult();
+  const existing = await getRanking(name);
+
+  if(draftResult){
+    // Draft already run
+    app.innerHTML = `
+      ${header(name, true)}
+      <div class="panel confirm-box">
+        <div class="big">The draft is complete</div>
+        <p>${existing ? "Your rankings were locked in and used." : "The draft ran without a submission from you — check with the admin if that's a surprise."}</p>
+        <div style="margin-top:18px;">
+          <button class="btn" onclick="renderResults()">View results</button>
+        </div>
+      </div>
+    `;
+    return;
+  }
+
+  currentRanks = {};
+  if(existing && existing.ranks){
+    currentRanks = {...existing.ranks};
+  }
+
+  const rows = GAMES.map(g => {
+    const val = currentRanks[g.num] || "";
+    let options = `<option value="">—</option>`;
+    for(let i=1;i<=TOTAL_GAMES;i++){
+      options += `<option value="${i}" ${String(val)===String(i)?"selected":""}>${i}</option>`;
+    }
+    return `
+      <div class="game-row" data-gamenum="${g.num}">
+        <div class="game-num">${g.num}</div>
+        <div class="game-info">
+          <div class="opp">${g.opp}</div>
+          <div class="meta">${fmtDate(g.date)} · ${g.day} · ${g.time}</div>
+          ${g.theme ? `<div class="theme-badge">${g.theme}</div>` : ""}
+        </div>
+        <div class="game-cost">${fmtMoney(g.cost)}</div>
+        <select class="rank-select" onchange="onRankChange(${g.num}, this.value)">${options}</select>
+      </div>`;
+  }).join("");
+
+  app.innerHTML = `
+    ${header(name + (existing ? " · editing your rankings" : " · rank all " + TOTAL_GAMES + " games"), true)}
+    <div class="panel">
+      <h2 class="section-title">Rank these ${TOTAL_GAMES} games</h2>
+      <p class="hint">1 = the game you most want tickets to. ${TOTAL_GAMES} = the one you care about least. Every game needs its own number — no ties.</p>
+      <div id="game-list">${rows}</div>
+    </div>
+    <div class="sticky-footer">
+      <div class="progress-text" id="progress-text">0 of ${TOTAL_GAMES} ranked</div>
+      <button class="btn" id="submit-btn" disabled onclick="submitRankings('${name}')">Submit rankings</button>
+    </div>
+  `;
+  validateRanks();
+}
+
+function onRankChange(gameNum, value){
+  if(value === ""){ delete currentRanks[gameNum]; }
+  else { currentRanks[gameNum] = value; }
+  validateRanks();
+}
+
+function validateRanks(){
+  const values = Object.values(currentRanks);
+  const counts = {};
+  values.forEach(v => counts[v] = (counts[v]||0) + 1);
+  const dupeValues = new Set(Object.keys(counts).filter(k => counts[k] > 1));
+
+  document.querySelectorAll('.game-row').forEach(row => {
+    const gnum = row.getAttribute('data-gamenum');
+    const select = row.querySelector('select');
+    const v = currentRanks[gnum];
+    if(v && dupeValues.has(String(v))){
+      select.classList.add('dupe');
+    } else {
+      select.classList.remove('dupe');
+    }
+  });
+
+  const filled = Object.keys(currentRanks).length;
+  const progressEl = document.getElementById('progress-text');
+  const submitBtn = document.getElementById('submit-btn');
+  if(dupeValues.size > 0){
+    progressEl.innerHTML = `<span style="color:var(--red)">Duplicate rank${dupeValues.size>1?'s':''}: ${[...dupeValues].join(', ')}</span>`;
+    submitBtn.disabled = true;
+  } else {
+    progressEl.innerHTML = `<b>${filled}</b> of ${TOTAL_GAMES} ranked`;
+    submitBtn.disabled = filled !== TOTAL_GAMES;
+  }
+}
+
+async function submitRankings(name){
+  const btn = document.getElementById('submit-btn');
+  btn.disabled = true;
+  btn.textContent = "Submitting…";
+  const ranks = {};
+  Object.keys(currentRanks).forEach(k => ranks[k] = Number(currentRanks[k]));
+  const result = await setRanking(name, {name, ranks, submittedAt: new Date().toISOString()});
+  if(!result.ok){
+    btn.disabled = false;
+    btn.textContent = "Submit rankings";
+    alert("Couldn't save your rankings (" + (result.error || "unknown error") + "). Please try again, and let the admin know if it keeps happening.");
+    return;
+  }
+  app.innerHTML = `
+    ${header(name, true)}
+    <div class="panel confirm-box">
+      <div class="big">Thanks, ${name} — you're locked in</div>
+      <p>Your rankings are saved. Once everyone's in, the admin will run the draft and you'll be able to see who got what.</p>
+      <div style="margin-top:18px;">
+        <button class="btn secondary" onclick="renderPlayer('${name}')">Edit my rankings</button>
+        <button class="btn" onclick="renderHome()" style="margin-left:8px;">Back home</button>
+      </div>
+    </div>
+  `;
+}
+
+/* ---------------- Admin ---------------- */
+const ADMIN_PASSWORD = "bres";
+let adminUnlocked = false;
+
+function promptForAdminPassword(){
+  app.innerHTML = `
+    ${header("Admin access", true)}
+    <div class="panel">
+      <h2 class="section-title">Enter the admin password</h2>
+      <p class="hint">This just keeps the dashboard out of the ranking flow — enter the password to continue.</p>
+      <div style="display:flex; gap:10px;">
+        <input type="password" id="admin-pw" placeholder="Password" style="flex:1; background:var(--panel-2); color:var(--ice); border:1px solid var(--line-strong); border-radius:9px; padding:11px 14px; font-size:14px;">
+        <button class="btn" onclick="checkAdminPassword()">Enter</button>
+      </div>
+      <div id="admin-pw-error" style="color:var(--red); font-size:12.5px; margin-top:10px;"></div>
+    </div>
+  `;
+  const input = document.getElementById('admin-pw');
+  input.focus();
+  input.addEventListener('keydown', (e) => { if(e.key === 'Enter') checkAdminPassword(); });
+}
+
+function checkAdminPassword(){
+  const val = document.getElementById('admin-pw').value;
+  if(val === ADMIN_PASSWORD){
+    adminUnlocked = true;
+    renderAdmin();
+  } else {
+    document.getElementById('admin-pw-error').textContent = "That's not the right password.";
+  }
+}
+
+async function renderAdmin(){
+  if(!adminUnlocked){
+    promptForAdminPassword();
+    return;
+  }
+  app.innerHTML = `<div class="loading">Loading admin dashboard…</div>`;
+  const statuses = await getAllStatuses();
+  const draftResult = await getDraftResult();
+
+  if(draftResult){
+    renderAdminResults(draftResult, statuses);
+    return;
+  }
+
+  const allSubmitted = PLAYERS.every(p => !!statuses[p]);
+
+  const statusChips = PLAYERS.map(p => `
+    <div class="status-chip ${statuses[p] ? 'yes':'no'}">
+      <div class="name">${p}</div>
+      <div class="state">${statuses[p] ? "Submitted" : "Waiting"}</div>
+    </div>
+  `).join("");
+
+  const orderSlots = [0,1,2,3].map(i => `
+    <div class="order-slot">
+      <label>${["1st","2nd","3rd","4th"][i]} pick</label>
+      <select id="order-${i}" onchange="validateOrder()">
+        ${PLAYERS.map(p => `<option value="${p}" ${i===PLAYERS.indexOf(p) ? "selected":""}>${p}</option>`).join("")}
+      </select>
+    </div>
+  `).join("");
+
+  app.innerHTML = `
+    ${header("Admin dashboard", true)}
+    <div class="panel">
+      <h2 class="section-title">Who's submitted</h2>
+      <div class="status-grid">${statusChips}</div>
+      <p class="hint" style="margin-bottom:0;">${allSubmitted ? "Everyone's in — set the draft order below and run it." : "Waiting on everyone before you can run the draft."}</p>
+    </div>
+    <div class="panel">
+      <h2 class="section-title">Draft order</h2>
+      <p class="hint">First pick gets their top remaining choice, then it moves to the next pick, and so on — repeating in this order until all ${TOTAL_GAMES} games are assigned. With ${TOTAL_GAMES} games and 4 people, that splits evenly to ${TOTAL_GAMES/4} games each.</p>
+      <div class="order-grid">${orderSlots}</div>
+      <div id="order-error" style="color:var(--red); font-size:12.5px; margin-bottom:10px;"></div>
+      <div class="action-row">
+        <button class="btn" id="run-draft-btn" onclick="runDraft()" ${allSubmitted ? "" : "disabled"}>Run the draft</button>
+      </div>
+    </div>
+    <div class="panel">
+      <h2 class="section-title">Reset</h2>
+      <p class="hint">Clears everyone's saved rankings so people can start over. Use only if something needs a redo.</p>
+      <div class="action-row">
+        <button class="btn danger" onclick="resetAllRankings()">Clear all rankings</button>
+      </div>
+    </div>
+  `;
+  validateOrder();
+}
+
+function validateOrder(){
+  const vals = [0,1,2,3].map(i => document.getElementById('order-'+i).value);
+  const unique = new Set(vals);
+  const errorEl = document.getElementById('order-error');
+  const runBtn = document.getElementById('run-draft-btn');
+  if(unique.size !== 4){
+    errorEl.textContent = "Each person can only appear once in the draft order.";
+    if(runBtn) runBtn.disabled = true;
+  } else {
+    errorEl.textContent = "";
+    // only re-enable if submissions were already complete when panel was drawn
+  }
+}
+
+async function resetAllRankings(){
+  if(!confirm("This clears all 4 people's saved rankings. Continue?")) return;
+  await deleteAllRankings();
+  await deleteDraftResult();
+  renderAdmin();
+}
+
+async function runDraft(){
+  const order = [0,1,2,3].map(i => document.getElementById('order-'+i).value);
+  if(new Set(order).size !== 4){ return; }
+
+  const btn = document.getElementById('run-draft-btn');
+  btn.disabled = true;
+  btn.textContent = "Running…";
+
+  const rankingsByPerson = {};
+  for(const p of PLAYERS){
+    const r = await getRanking(p);
+    if(!r){
+      alert(p + " hasn't submitted rankings yet.");
+      btn.disabled = false;
+      btn.textContent = "Run the draft";
+      return;
+    }
+    // sort game numbers by their rank ascending (1 = most preferred)
+    const entries = Object.entries(r.ranks).map(([gnum, rank]) => ({gnum: Number(gnum), rank: Number(rank)}));
+    entries.sort((a,b) => a.rank - b.rank);
+    rankingsByPerson[p] = entries.map(e => e.gnum);
+  }
+
+  const remaining = new Set(GAMES.map(g => g.num));
+  const assignment = {}; // gameNum -> person
+  let idx = 0;
+  let safety = 0;
+  while(remaining.size > 0 && safety < 1000){
+    safety++;
+    const person = order[idx % order.length];
+    const prefs = rankingsByPerson[person];
+    let picked = null;
+    for(const gnum of prefs){
+      if(remaining.has(gnum)){ picked = gnum; break; }
+    }
+    if(picked === null){
+      // fallback: person had no valid remaining pref (shouldn't happen), grab lowest remaining game number
+      picked = Math.min(...remaining);
+    }
+    assignment[picked] = person;
+    remaining.delete(picked);
+    idx++;
+  }
+
+  const result = {order, assignment, decidedAt: new Date().toISOString()};
+  const ok = await setDraftResult(result);
+  if(!ok){
+    alert("Something went wrong saving the draft results. Please try again.");
+    btn.disabled = false;
+    btn.textContent = "Run the draft";
+    return;
+  }
+  const statuses = await getAllStatuses();
+  renderAdminResults(result, statuses);
+}
+
+function renderAdminResults(draftResult, statuses){
+  const assignment = draftResult.assignment;
+  const rows = GAMES.map(g => {
+    const owner = assignment[g.num];
+    const color = PLAYER_COLORS[owner] || "#999";
+    return `
+      <tr>
+        <td>${g.num}</td>
+        <td>${fmtDate(g.date)}</td>
+        <td>${g.day}</td>
+        <td>${g.time}</td>
+        <td>${g.opp}${g.theme ? `<div class="theme-badge" style="margin-top:4px;">${g.theme}</div>` : ""}</td>
+        <td>${fmtMoney(g.cost)}</td>
+        <td><span class="pill" style="background:${color}">${owner}</span></td>
+      </tr>`;
+  }).join("");
+
+  const summary = PLAYERS.map(p => {
+    const games = Object.entries(assignment).filter(([gnum, owner]) => owner === p);
+    const total = games.reduce((sum, [gnum]) => {
+      const g = GAMES.find(x => x.num === Number(gnum));
+      return sum + (g ? g.cost : 0);
+    }, 0);
+    return `
+      <div class="summary-card">
+        <div class="pname" style="color:${PLAYER_COLORS[p]}">${p}</div>
+        <div class="games">${games.length}</div>
+        <div class="games-label">games</div>
+        <div class="cost">${fmtMoney(total)}</div>
+      </div>`;
+  }).join("");
+
+  app.innerHTML = `
+    ${header("Admin dashboard · draft complete", true)}
+    <div class="panel wide">
+      <h2 class="section-title">Draft order used</h2>
+      <p class="hint">${draftResult.order.map((p,i) => `${i+1}. ${p}`).join(" &nbsp; ")}</p>
+      <div class="summary-grid">${summary}</div>
+    </div>
+    <div class="panel wide">
+      <h2 class="section-title">Full allocation — first ${TOTAL_GAMES} games</h2>
+      <div class="table-scroll">
+        <table class="results-table">
+          <thead><tr><th>#</th><th>Date</th><th>Day</th><th>Time</th><th>Opponent</th><th>Cost</th><th>Assigned to</th></tr></thead>
+          <tbody>${rows}</tbody>
+        </table>
+      </div>
+    </div>
+    <div class="panel">
+      <h2 class="section-title">Redo</h2>
+      <p class="hint">Re-running keeps everyone's submitted rankings but lets you pick a new draft order. Clearing rankings wipes everything and starts over.</p>
+      <div class="action-row">
+        <button class="btn secondary" onclick="redoDraftOrder()">Re-run with a new order</button>
+        <button class="btn danger" onclick="resetAllRankings()">Clear all rankings</button>
+      </div>
+    </div>
+  `;
+}
+
+async function redoDraftOrder(){
+  if(!confirm("This clears the current draft result so you can run it again with a different order. Rankings stay intact. Continue?")) return;
+  await deleteDraftResult();
+  renderAdmin();
+}
+
+/* ---------------- Shared results view (non-admin) ---------------- */
+async function renderResults(){
+  app.innerHTML = `<div class="loading">Loading results…</div>`;
+  const draftResult = await getDraftResult();
+  if(!draftResult){
+    app.innerHTML = `
+      ${header("Results", true)}
+      <div class="panel center-note">The draft hasn't been run yet.</div>
+    `;
+    return;
+  }
+  const statuses = await getAllStatuses();
+  renderAdminResults(draftResult, statuses);
+  // swap the admin-only actions out for a plain back button for regular users
+  const actionsPanel = app.querySelector('.panel:last-child');
+  if(actionsPanel) actionsPanel.remove();
+}
+
+/* ---------------- Boot ---------------- */
+renderHome();
+</script>
+</body>
+</html>
