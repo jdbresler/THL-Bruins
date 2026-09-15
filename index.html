@@ -489,7 +489,7 @@ const app = document.getElementById("app");
 // 2. Build > Realtime Database > Create Database
 // 3. Rules tab > set {"rules": {".read": true, ".write": true}} > Publish
 // 4. Copy the database URL shown at the top of the Data tab and paste it below.
-const FIREBASE_DB_URL_RAW = "REPLACE_WITH_YOUR_FIREBASE_DATABASE_URL";
+const FIREBASE_DB_URL_RAW = "https://thl-bruins-default-rtdb.firebaseio.com/";
 const FIREBASE_DB_URL = FIREBASE_DB_URL_RAW.replace(/\/+$/, "");
 const BACKEND_CONFIGURED = !FIREBASE_DB_URL.includes("REPLACE_WITH");
 
